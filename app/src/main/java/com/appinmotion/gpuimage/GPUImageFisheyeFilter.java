@@ -51,15 +51,25 @@ public class GPUImageFisheyeFilter extends GPUImageFilter {
                     "{\n" +
                     "    float theta  = atan(p.y, p.x);\n" +
                     "    float radius = length(p);\n" +
-//                    "    if(radius < 0.05)" +
-//                    "   {" +
-//                    "       radius = pow(radius, 1.4);\n" +
-//                    "       p.x = radius * cos(theta);\n" +
-//                    "       p.y = radius * sin(theta);\n" +
-//                    "       return 0.5 * (p + 1.0);" +
-//
-//                    "   }" +
-                    "    radius = pow(radius, 2.0);\n" +
+                    "    if(radius < 0.4)" +
+                    "   {" +
+                    "    vec2 uv;"+
+                    "    float d = length(p);\n" +
+                    "    float z = sqrt(1.0 - d * d);\n" +
+                    "    float r = atan(d, z) / PI;\n" +
+                    "    float phi = atan(p.y, p.x);\n" +
+                    "    uv.x = 0.83 * r * cos(phi) + 0.5;\n" +
+                    "    uv.y = 0.83 * r * sin(phi) + 0.5;\n" +
+                    "    return uv;"+
+                    "   }" +
+                    "    if(radius > 0.6)" +
+                    "   {" +
+                    "    radius = pow(radius, 1.67 - radius + 0.6);\n" +
+                    "    p.x = radius * cos(theta);\n" +
+                    "    p.y = radius * sin(theta);\n" +
+                    "    return 0.5 * (p + 1.0);\n" +
+                    "   }" +
+                    "    radius = pow(radius, 1.67);\n" +
                     "    p.x = radius * cos(theta);\n" +
                     "    p.y = radius * sin(theta);\n" +
                     "    return 0.5 * (p + 1.0);\n" +

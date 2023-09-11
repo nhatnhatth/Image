@@ -33,38 +33,44 @@ public class GPUImageBarrelFilter extends GPUImageFilter {
                     "varying vec2 textureCoordinate;\n" +
                     " \n" +
                     "uniform mat4 gxl3d_ModelViewProjectionMatrix;\n" +
-                    "vec4 Distort(vec4 p)\n" +
-                    "{\n" +
-                    "    vec2 v = p.xy / p.w;\n" +
-                    "    float radius = length(v);\n" +
-                    "    if (radius > 0.0)\n" +
-                    "    {\n" +
-                    "      float theta = atan(v.y,v.x);\n" +
-                    "      radius = pow(radius, 1.4);\n" +
-                    "      v.x = radius * cos(theta);\n" +
-                    "      v.y = radius * sin(theta);\n" +
-                    "      p.xy = v.xy * p.w;\n" +
-                    "    }\n" +
-                    "    return p;\n" +
-                    "}"+
                     "void main()\n" +
                     "{\n" +
-                    "  gl_Position = Distort(position);\n" +
+                    "  gl_Position = position;\n" +
                     "  Vertex_UV = inputTextureCoordinate;\n" +
-                    "  textureCoordinate = inputTextureCoordinate.xy;\n" +
+                    "    textureCoordinate = inputTextureCoordinate.xy;\n" +
                     "}";
 
     public static final String FISHEYE_FRAGMENT_SHADER =
             "uniform sampler2D tex0;\n" +
-            "varying vec4 Vertex_UV;\n" +
-            "varying vec2 textureCoordinate;\n" +
-            "void main()\n" +
-            "{\n" +
-            "   vec4 c = vec4(1.0);\n" +
-            "   vec2 uv = Vertex_UV.xy;\n" +
-            "   c = texture2D(tex0, uv);\n" +
-            "   gl_FragColor =  c;"+
-            "}";
+                    "varying vec4 Vertex_UV;\n" +
+                    "const float PI = 3.1415926535;\n" +
+                    "\n" +
+                    "void main()\n" +
+                    "{\n" +
+                    "  float aperture = 178.0;\n" +
+                    "  float apertureHalf = 0.5 * aperture * (PI / 180.0);\n" +
+                    "  float maxFactor = sin(apertureHalf);\n" +
+                    "  \n" +
+                    "  vec2 uv;\n" +
+                    "  vec2 xy = 2.0 * Vertex_UV.xy - 1.0;\n" +
+                    "  float d = length(xy);\n" +
+                    "  if (d < 0.5)\n" +
+                    "  {\n" +
+                    "    d = length(xy);\n" +
+                    "    float z = sqrt(1.0 - d * d);\n" +
+                    "    float r = atan(d, z) / PI;\n" +
+                    "    float phi = atan(xy.y, xy.x);\n" +
+                    "    \n" +
+                    "    uv.x = 0.4 * r * cos(phi) + 0.5;\n" +
+                    "    uv.y = 0.4 * r * sin(phi) + 0.5;\n" +
+                    "  }\n" +
+                    "  else\n" +
+                    "  {\n" +
+                    "    uv = Vertex_UV.xy;\n" +
+                    "  }\n" +
+                    "  vec4 c = texture2D(tex0, uv);\n" +
+                    "  gl_FragColor = c;\n" +
+                    "}";
 
 
     public GPUImageBarrelFilter() {
